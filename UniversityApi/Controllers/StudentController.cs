@@ -29,7 +29,7 @@ namespace UniversityApi.Controllers
         public IActionResult GetSingle(int id)
         {
             var student = ctx.Students.Find(id);
-            if (student == null) return BadRequest();
+            if (student == null) return BadRequest($"No student with id: {id} founded!");
 
             return Ok(mapper.MapEntityToDto(student));
         }
@@ -44,6 +44,8 @@ namespace UniversityApi.Controllers
                 Average = (double)s.Exams.Sum(e => e.Grade * e.Subject.Credits) / s.Exams.Sum(e => e.Subject.Credits)
             }).OrderByDescending(s => s.Average)
             .Take(3);
+
+            if(student == null) return BadRequest("No student founded");
 
             return Ok(student);
         }
@@ -81,14 +83,14 @@ namespace UniversityApi.Controllers
 
             if (student == null)
             {
-                return BadRequest("Studente non trovato.");
+                return BadRequest("Student not founded.");
             }
 
             int remainingCredits = MaxCredits - student.CurrentCredits;
 
             if (remainingCredits <= 0)
             {
-                return Ok(new { message = "Lo studente ha già raggiunto i 180 crediti!" });
+                return Ok(new { message = "Student already reached 180 credits!" });
             }
 
             double requiredWeightedSum = 28 * MaxCredits; 
@@ -107,7 +109,60 @@ namespace UniversityApi.Controllers
 
 
         /* POST SECTION */
+        [HttpPost("get-many")]
 
+        /* Permette di ottenere una lista di utenti specifici in base agli ID*/
+        public IActionResult GetMany(List<int> ids)
+        {
+            var resultLinq = (from s in ctx.Students // tutti gli student dal db
+                              join id in ids         // join con la lista ID solo 
+                              on s.Id equals id      // se la condizione sotto viene rispettata
+                              select new
+                              {
+                                  s.Id,
+                                  s.Name,
+                                  s.Surname,
+                                  Exams = s.Exams.Select(e => new             // la select mi serve per ritornare le informazioni che voglio (senno sarebbero null)
+                                  {
+                                      SubjectTitle = e.Subject.Title,
+                                      e.Grade
 
+                                  }).ToList()
+                              }).ToList();
+            return Ok(resultLinq);
+        }
+
+        /*PUT SECTION*/
+        [HttpPut]
+        public IActionResult Update(StudentDTO studentDTO)
+        {
+            var student = ctx.Students.Find(studentDTO.Id);
+            if (studentDTO == null) return BadRequest();
+
+            student.Name = studentDTO.Name;
+            student.Surname = studentDTO.Surname;
+            ctx.SaveChanges();
+            return Ok();
+        }
+
+        /*DELETE SECTION*/
+
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
+        {
+            var student = ctx.Students
+                .Include(s => s.Exams) // carico gli esami dello studente
+                .SingleOrDefault(s => s.Id == id);
+
+            if(student == null) return BadRequest("Student not founded");
+
+            ctx.exams.RemoveRange(student.Exams); // rimuovo gli esami associati allo studente
+
+            ctx.Students.Remove(student);
+
+            ctx.SaveChanges();
+            return Ok("Student and their exams deleted!");
+
+        }
     }
 }
