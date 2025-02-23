@@ -32,7 +32,7 @@ namespace UniversityApi.DTO
                 Credits = subject.Credits,
             };
         }
-        public Subject MapEntityToDto(SubjectDTO subjectDTO)
+        public Subject MapDtoToEntity(SubjectDTO subjectDTO)
         {
             return new Subject
             {
