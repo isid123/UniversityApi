@@ -49,7 +49,7 @@ namespace UniversityApi.Controllers
 
             return Ok(student);
         }
-        [HttpGet("worst-Subject")]
+        [HttpGet("worst3")]
         public IActionResult GetWorst()
         {
             var subject = ctx.Subjects
@@ -132,11 +132,11 @@ namespace UniversityApi.Controllers
         }
 
         /*PUT SECTION*/
-        [HttpPut]
-        public IActionResult Update([FromBody] StudentDTO studentDTO)
+        [HttpPut("{id}")]
+        public IActionResult Update(int id,[FromBody] StudentDTO studentDTO)
         {
-            var student = ctx.Students.Find(studentDTO.Id);
-            if (studentDTO == null) return BadRequest();
+            var student = ctx.Students.Find(id);
+            if (student == null) return BadRequest($"No student with id: {id} founded");
 
             student.Name = studentDTO.Name;
             student.Surname = studentDTO.Surname;

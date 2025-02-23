@@ -31,7 +31,7 @@ namespace UniversityApi.Controllers
             if (subject == null) return BadRequest($"No subject with id: {id} founded!");
             return Ok(mapper.MapEntityToDto(subject));
         }
-        [HttpGet("worst-Subject")]
+        [HttpGet("worst3")]
         public IActionResult GetWorstSubject()
         {
             var subject = ctx.Subjects
@@ -56,6 +56,21 @@ namespace UniversityApi.Controllers
             ctx.SaveChanges();
             return Created("", mapper.MapEntityToDto(entity));
         }
+        [HttpPost("get-many")]
+        public IActionResult GetMany([FromBody] List<int> ids)
+        {
+            var result = (from sub in ctx.Subjects
+                          join id in ids
+                          on sub.Id equals id
+                          select new
+                          {
+                              sub.Id,
+                              sub.Title,
+                              sub.Credits,
+
+                          }).ToList();
+            return Ok(result);
+        }
         /*PUT SECTION*/
         [HttpPut("{id}")]
         public IActionResult Update(int id,[FromBody] SubjectDTO subjectDTO)
@@ -70,7 +85,7 @@ namespace UniversityApi.Controllers
             return Ok();
         }
         /*DELETE SECTION*/
-        [HttpDelete]
+        [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
             var entity = ctx.Subjects.Include(s => s.Exams).SingleOrDefault(s => s.Id == id);
