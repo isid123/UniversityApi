@@ -110,9 +110,8 @@ namespace UniversityApi.Controllers
 
         /* POST SECTION */
         [HttpPost("get-many")]
-
         /* Permette di ottenere una lista di utenti specifici in base agli ID*/
-        public IActionResult GetMany(List<int> ids)
+        public IActionResult GetMany([FromBody] List<int> ids)
         {
             var resultLinq = (from s in ctx.Students // tutti gli student dal db
                               join id in ids         // join con la lista ID solo 
@@ -134,7 +133,7 @@ namespace UniversityApi.Controllers
 
         /*PUT SECTION*/
         [HttpPut]
-        public IActionResult Update(StudentDTO studentDTO)
+        public IActionResult Update([FromBody] StudentDTO studentDTO)
         {
             var student = ctx.Students.Find(studentDTO.Id);
             if (studentDTO == null) return BadRequest();
@@ -156,7 +155,10 @@ namespace UniversityApi.Controllers
 
             if(student == null) return BadRequest("Student not founded");
 
-            ctx.exams.RemoveRange(student.Exams); // rimuovo gli esami associati allo studente
+            if (student.Exams.Any())
+            {
+                ctx.exams.RemoveRange(student.Exams); // rimuovo gli esami associati allo studente
+            }
 
             ctx.Students.Remove(student);
 
