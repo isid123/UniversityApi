@@ -12,9 +12,9 @@ namespace UniversityApi.Data
         public int SubjectId { get; set; }
 
         [ForeignKey(nameof(StudentId))]
-        public Student? student { get; set; }
+        public Student? Student { get; set; }
         [ForeignKey(nameof(SubjectId))]
-        public Subject? subject { get; set; }
+        public Subject? Subject { get; set; }
 
     }
 }
