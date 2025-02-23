@@ -25,11 +25,11 @@ namespace UniversityApi.Controllers
         {
             return Ok(ctx.exams.ToList().ConvertAll(mapper.MapEntityToDto));
         }
-        [HttpGet("{id}")]
-        public IActionResult GetSingle(int id)
+        [HttpGet("{studentId}/{subjectId}")] 
+        public IActionResult GetSingle(int studentId, int subjectId) 
         {
-            var result = ctx.exams.Find(id);
-            if (result == null) return BadRequest($"Exam with id: {id} not founded");
+            Exam? result = ctx.exams.Find(studentId, subjectId);
+            if (result == null) return BadRequest($"Exam with studentId: {studentId} and subjectId: {subjectId} not founded");
 
             return Ok(mapper.MapEntityToDto(result));
         }
