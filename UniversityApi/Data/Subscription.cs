@@ -3,15 +3,15 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace UniversityApi.Data
 {
-    public class Subject
+    [PrimaryKey(nameof(CourseId), nameof(StudentId))]
+    public class Subscription
     {
-        public int Id { get; set; }
         public int CourseId { get; set; }
-        public required string Title { get; set; }
-        public int Credits { get; set; }
-        public List<Exam>? Exams { get; set; }
+        public int StudentId { get; set; }
 
         [ForeignKey(nameof(CourseId))]
         Course? Course { get; set; }
+        [ForeignKey(nameof(StudentId))]
+        Student? Student { get; set; }
     }
 }
