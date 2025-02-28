@@ -64,48 +64,26 @@ namespace UniversityApi.Controllers
 
             return Ok(subject);
         }
-        [HttpGet("future-average/{id}")]
-        public IActionResult GetFutureAverage(int id)
+        [HttpGet("FutureAvg/{id}")]
+        public IActionResult GetFutureAvg(int id)
         {
-            int MaxCredits = 180;
 
-            var student = ctx.Students
-                .Where(s => s.Id == id)
-                .Select(s => new
-                {
-                    s.Id,
-                    s.Name,
-                    s.Surname,
-                    CurrentCredits = s.Exams.Sum(e => e.Subject.Credits),
-                    CurrentWeightedSum = s.Exams.Sum(e => e.Grade * e.Subject.Credits)
-                })
-                .SingleOrDefault();
-
+            Student? student = ctx.Students
+                .Include(s => s.Exams)
+                .ThenInclude(e => e.Subject)
+                .SingleOrDefault(s => s.Id == id);
             if (student == null)
-            {
-                return BadRequest("Student not founded.");
-            }
+                return BadRequest();
+            int totCredits = ctx.Subjects.Sum(s => s.Credits);
+            int actualCredits = student.Exams.Sum(e => e.Subject.Credits);
+            int weightedGrades = student.Exams.Sum(e => e.Grade * e.Subject.Credits);
 
-            int remainingCredits = MaxCredits - student.CurrentCredits;
-
-            if (remainingCredits <= 0)
-            {
-                return Ok(new { message = "Student already reached 180 credits!" });
-            }
-
-            double requiredWeightedSum = 28 * MaxCredits; 
-            double futureAvg = (requiredWeightedSum - student.CurrentWeightedSum) / remainingCredits;
-
-            return Ok(new
-            {
-                student.Id,
-                student.Name,
-                student.Surname,
-                student.CurrentCredits,
-                remainingCredits,
-                RequiredFutureAverage = futureAvg > 30 ? 30 : futureAvg /*max is 30 credit for uni*/
-            });
+            double result = Math.Max((28 * totCredits - weightedGrades) / (totCredits - actualCredits), 18);
+            if (result > 30)
+                return Ok("impossible");
+            return Ok(result);
         }
+
 
 
         /* POST SECTION */
