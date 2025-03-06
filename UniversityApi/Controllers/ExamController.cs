@@ -23,12 +23,12 @@ namespace UniversityApi.Controllers
         [HttpGet]
         public IActionResult GetAll()
         {
-            return Ok(ctx.exams.ToList().ConvertAll(mapper.MapEntityToDto));
+            return Ok(ctx.Exams.ToList().ConvertAll(mapper.MapEntityToDto));
         }
         [HttpGet("{studentId}/{subjectId}")] 
         public IActionResult GetSingle(int studentId, int subjectId) 
         {
-            Exam? result = ctx.exams.Find(studentId, subjectId);
+            Exam? result = ctx.Exams.Find(studentId, subjectId);
             if (result == null) return BadRequest($"Exam with studentId: {studentId} and subjectId: {subjectId} not founded");
 
             return Ok(mapper.MapEntityToDto(result));
@@ -36,7 +36,7 @@ namespace UniversityApi.Controllers
         [HttpGet("top3")]
         public IActionResult GetTop()
         {
-            var exams = ctx.exams.Select(e => new
+            var exams = ctx.Exams.Select(e => new
             {
                 Title = e.Subject.Title,
                 e.SubjectId,
@@ -50,7 +50,7 @@ namespace UniversityApi.Controllers
         [HttpGet("worst3")]
         public IActionResult GetWorst()
         {
-            var exams = ctx.exams.Select(e => new
+            var exams = ctx.Exams.Select(e => new
             {
                 Title = e.Subject.Title,
                 e.SubjectId,
@@ -67,14 +67,14 @@ namespace UniversityApi.Controllers
         {
             var entity = mapper.MapDtoToEntity(examDTO);
 
-            ctx.exams.Add(entity);
+            ctx.Exams.Add(entity);
             ctx.SaveChanges();
             return Created("", mapper.MapEntityToDto(entity));
         }
         [HttpPost("get-many")]
         public IActionResult GetMany([FromBody] List<int> ids)
         {
-            var result = (from e in ctx.exams
+            var result = (from e in ctx.Exams
                           join subjId in ids 
                           on e.SubjectId equals subjId
                           group e by new { e.SubjectId, e.Subject.Title } into g
@@ -93,7 +93,7 @@ namespace UniversityApi.Controllers
         [HttpPut("{id}")]
         public IActionResult Update(int id, [FromBody] ExamDTO examDTO)
         {
-            var entity = ctx.exams.Find(id);
+            var entity = ctx.Exams.Find(id);
             if (entity == null) return BadRequest($"Exam with id: {id} not founded");
 
             entity.Grade = examDTO.Grade;
@@ -105,10 +105,10 @@ namespace UniversityApi.Controllers
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
-            var entity = ctx.exams.Find(id);
+            var entity = ctx.Exams.Find(id);
             if (entity == null) return BadRequest($"Exam with id: {id} not founded");
 
-            ctx.exams.Remove(entity);
+            ctx.Exams.Remove(entity);
             ctx.SaveChanges();
             return Ok("Exam Deleted!");
         }

@@ -13,6 +13,8 @@ namespace UniversityApi.Data
         /* tables */
         public DbSet<Student> Students { get; set; }
         public DbSet<Subject> Subjects { get; set; }
-        public DbSet<Exam> exams { get; set; }
+        public DbSet<Exam> Exams { get; set; }
+        public DbSet<Course> Courses { get; set; }
+        public DbSet<Subscription> Subscriptions { get; set; }
     }
 }

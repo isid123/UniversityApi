@@ -94,7 +94,7 @@ namespace UniversityApi.Controllers
 
             if (entity.Exams.Any())
             {
-                ctx.exams.RemoveRange(entity.Exams);
+                ctx.Exams.RemoveRange(entity.Exams);
             }
 
             ctx.Subjects.Remove(entity);

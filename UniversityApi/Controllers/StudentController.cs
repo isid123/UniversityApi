@@ -108,6 +108,57 @@ namespace UniversityApi.Controllers
                               }).ToList();
             return Ok(resultLinq);
         }
+        [HttpPost("subscribe/{courseId}")]
+        public IActionResult SubscribeToCourse(StudentDTO studentDTO, int courseId)
+        {
+            /*lo studente può iscriversi al corso solo se tutti i suoi crediti sono definiti*/
+
+            // Voglio controllare che lo studente esista senno lo creo 
+            var existingStudent = ctx.Students
+                .SingleOrDefault(s => s.Name == studentDTO.Name 
+                && s.Surname == studentDTO.Surname);
+
+            if (existingStudent == null)
+            {
+                var newStudent = mapper.MapDtoToEntity(studentDTO);
+                ctx.Students.Add(newStudent);
+                ctx.SaveChanges();
+
+                return Ok(mapper.MapEntityToDto(newStudent));
+            }
+            var student = existingStudent;
+
+            var existingCourse = ctx.Courses.Find(courseId);
+            if (existingCourse == null) return BadRequest();
+
+            int totalCreditsDefined = ctx.Subjects.Where(sub => sub.CourseId == courseId).Sum(sub => sub.Credits);
+
+            int requiredCredits = existingCourse.isTriennal ? 180 : 120;
+
+            if (totalCreditsDefined < requiredCredits)
+            {
+                return BadRequest("The course does not have the required number of credits to allow student enrollment");
+            }
+
+            var existingSubscription = ctx.Subscriptions
+                .SingleOrDefault(s => s.StudentId == existingStudent.Id && s.CourseId == existingCourse.Id);
+
+            if(existingSubscription != null)
+            {
+                return BadRequest("Student alredy joined this course.");
+            }
+
+            var subscription = new Subscription
+            {
+                StudentId = existingStudent.Id,
+                CourseId = existingCourse.Id,
+            };
+
+            ctx.Subscriptions.Add(subscription);
+            ctx.SaveChanges();
+
+            return Ok("Student successfully joined the course.");
+        }
 
         /*PUT SECTION*/
         [HttpPut("{id}")]
@@ -135,7 +186,7 @@ namespace UniversityApi.Controllers
 
             if (student.Exams.Any())
             {
-                ctx.exams.RemoveRange(student.Exams); // rimuovo gli esami associati allo studente
+                ctx.Exams.RemoveRange(student.Exams); // rimuovo gli esami associati allo studente
             }
 
             ctx.Students.Remove(student);
